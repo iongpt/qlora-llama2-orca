@@ -31,7 +31,7 @@ bnb_config = transformers.BitsAndBytesConfig(
 # begin initializing HF items, need auth token for these
 model_config = transformers.AutoConfig.from_pretrained(
     model_id,
-    use_auth_token=False
+    use_auth_token=True
 )
 model = transformers.AutoModelForCausalLM.from_pretrained(
     model_id,
@@ -39,7 +39,7 @@ model = transformers.AutoModelForCausalLM.from_pretrained(
     config=model_config,
     quantization_config=bnb_config,
     device_map='auto',
-    use_auth_token=False
+    use_auth_token=True
 )
 model.eval()
 print(f"Model loaded on {device}")
@@ -48,7 +48,7 @@ print("Memory footprint: {} ".format(mem))
 
 tokenizer = transformers.AutoTokenizer.from_pretrained(
     model_id,
-    use_auth_token=False
+    use_auth_token=True
 )
 
 # Get Dataset
