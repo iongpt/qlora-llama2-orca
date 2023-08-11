@@ -81,7 +81,7 @@ def create_prompt(rec):
     return rec
 
 
-p = create_prompt(dataset_cot[5000])
+p = create_prompt(dataset_cot[4999])
 print(p)
 print(p["text"])
 dataset = dataset_cot.map(create_prompt)
@@ -89,7 +89,7 @@ dataset = dataset.map(
     batched=True,
     remove_columns=['source', 'target', 'rationale', 'task', 'type']
 )
-print(dataset[30000]["text"])
+print(dataset[4999]["text"])
 
 
 # Save dataset to the hub for future use
