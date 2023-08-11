@@ -12,6 +12,9 @@ from torch import cuda, bfloat16
 import transformers
 import os
 
+from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
+from transformers.trainer_callback import TrainerCallback
+
 model_id = MODEL_ID
 
 device = f'cuda:{cuda.current_device()}' if cuda.is_available() else 'cpu'
@@ -71,7 +74,7 @@ def create_prompt(rec):
     return rec
 
 
-p = create_prompt(dataset_cot[4999])
+p = create_prompt(dataset_cot[99])
 print(p)
 print(p["text"])
 dataset = dataset_cot.map(create_prompt)
@@ -81,7 +84,7 @@ dataset = dataset.map(
                     'question', 'response', 'id']
 
 )
-print(dataset[4999]["text"])
+print(dataset[99]["text"])
 
 
 # Save dataset to the hub for future use
@@ -216,12 +219,21 @@ trainer = Trainer(
         per_device_train_batch_size=1,
         gradient_accumulation_steps=4,
         warmup_steps=10,
-        max_steps=100,
-        learning_rate=2e-4,
+        max_steps=10,
         fp16=True,
         logging_steps=1,
         output_dir="outputs",
         optim="paged_adamw_8bit",
+        batch_size=128,
+        micro_batch_size=4,
+        num_epochs=1,
+        learning_rate=1e-4,
+        cutoff_len=256,
+        val_set_size=2000,
+        lora_r=8,
+        lora_alpha=16,
+        lora_dropout=0.05
+
     ),
     data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     callbacks=[SavePeftModelCallback]
