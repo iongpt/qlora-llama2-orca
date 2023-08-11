@@ -68,7 +68,7 @@ def create_prompt(rec):
     response = f"### RESPONSE:\n{rec['response']}\n"
     end = "### End"
 
-    parts = [part for part in [start, question, response, answer, end] if part]
+    parts = [part for part in [start, question, response, end] if part]
 
     formatted_prompt = "\n\n".join(parts)
     formatted_prompt = formatted_prompt.replace('\\n', '\n')
