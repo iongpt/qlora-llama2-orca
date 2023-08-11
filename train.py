@@ -85,7 +85,7 @@ dataset = dataset_cot.map(create_prompt)
 dataset = dataset.map(
     batched=True,
     remove_columns=['system_prompt',
-                    'question', 'response', 'id', 'text']
+                    'question', 'response', 'id']
 
 )
 print(dataset[4999]["text"])
