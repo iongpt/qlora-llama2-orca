@@ -224,12 +224,8 @@ trainer = Trainer(
         logging_steps=1,
         output_dir="outputs",
         optim="paged_adamw_8bit",
-
-
         num_train_epochs=1,
         learning_rate=1e-4,
-        cutoff_len=256,
-        val_set_size=2000,
         lora_r=8,
         lora_alpha=16,
         lora_dropout=0.05
