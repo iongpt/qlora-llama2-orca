@@ -160,8 +160,7 @@ config = LoraConfig(
     target_modules=modules,  # gonna train all
     lora_dropout=0.1,  # dropout probability for layers
     bias="none",
-    task_type="CAUSAL_LM",
-    micro_batch_size=4
+    task_type="CAUSAL_LM"
 )
 
 ## Get the PEFT Model using the downloaded model and the loRA config
