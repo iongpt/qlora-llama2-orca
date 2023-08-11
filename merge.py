@@ -8,7 +8,7 @@ import os
 def main():
     # Hardcoded values
     base_model_name_or_path = "projecte-aina/aguila-7b"
-    peft_model_path = "outputs/adapter_model.bin"
+    peft_model_path = "outputs/"
     output_dir = "merged"
     device = "auto"
     push_to_hub = False
