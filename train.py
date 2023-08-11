@@ -1,5 +1,6 @@
 # Configurable Parameters
-MODEL_ID = "meta-llama/Llama-2-7b-hf"
+# MODEL_ID = "meta-llama/Llama-2-7b-hf"
+MODEL_ID = "projecte-aina/aguila-7b"
 DATASET_NAME = "eemotgs/en_es_orca_tiny"
 output_dir = "outputs"
 
@@ -115,10 +116,9 @@ dataset = dataset.shuffle(seed=seed)
 for param in model.parameters():
     param.requires_grad = False  # freeze the model - train adapters later
     if param.ndim == 1:
-        # cast the small parameters (e.g. layernorm) to fp32 for stability
         param.data = param.data.to(torch.float32)
 
-model.gradient_checkpointing_enable()  # reduce number of stored activations
+model.gradient_checkpointing_enable()
 model.enable_input_require_grads()
 
 
@@ -138,7 +138,7 @@ def find_all_linear_names(model):
             names = name.split('.')
             lora_module_names.add(names[0] if len(names) == 1 else names[-1])
 
-    if 'lm_head' in lora_module_names:  # needed for 16-bit
+    if 'lm_head' in lora_module_names:
         lora_module_names.remove('lm_head')
     return list(lora_module_names)
 
@@ -149,10 +149,10 @@ print(modules)
 from peft import LoraConfig, get_peft_model
 
 config = LoraConfig(
-    r=16,  # attention heads
-    lora_alpha=64,  # alpha scaling
-    target_modules=modules,  # gonna train all
-    lora_dropout=0.1,  # dropout probability for layers
+    r=16,
+    lora_alpha=64,
+    target_modules=modules,  # should we  train all?
+    lora_dropout=0.1,
     bias="none",
     task_type="CAUSAL_LM"
 )
@@ -216,6 +216,27 @@ trainer = Trainer(
 
 model.config.use_cache = False
 
-trainer.train()
+# trainer.train()
 
 model.save_pretrained(output_dir)
+
+device = "auto"  # or any specific device name
+push_to_hub = True  # or False
+
+device_arg = { 'device_map': 'auto' }
+
+
+print(f"Loading PEFT: {output_dir}")
+model = PeftModel.from_pretrained(model, peft_model_path, **device_arg)
+print(f"Running merge_and_unload")
+model = model.merge_and_unload()
+
+tokenizer = AutoTokenizer.from_pretrained(base_model_name_or_path)
+
+
+model.save_pretrained(f"{output_dir}")
+tokenizer.save_pretrained(f"{output_dir}")
+print(f"Model saved to {output_dir}")
+
+
+
