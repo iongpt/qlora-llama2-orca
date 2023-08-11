@@ -12,6 +12,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed, Trainer,
 from torch import cuda, bfloat16
 import transformers
 import os
+from peft import PeftModel
 
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 from transformers.trainer_callback import TrainerCallback
