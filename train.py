@@ -226,7 +226,7 @@ trainer = Trainer(
         optim="paged_adamw_8bit",
 
 
-        num_epochs=1,
+        num_train_epochs=1,
         learning_rate=1e-4,
         cutoff_len=256,
         val_set_size=2000,
