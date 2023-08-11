@@ -17,7 +17,6 @@ import transformers
 # Get Model
 from huggingface_hub import notebook_login
 
-
 model_id = MODEL_ID
 
 device = f'cuda:{cuda.current_device()}' if cuda.is_available() else 'cpu'
@@ -58,17 +57,15 @@ dataset = load_dataset(DATASET_NAME, split="train")
 print(f'Number of records: {len(dataset)}')
 print(f'Column names are: {dataset.column_names}')
 
-# dataset_cot = dataset.filter(lambda example: example['type'] == "CoT")
 dataset_cot = dataset
-print(f'Number of records: {len(dataset_cot)}')
-print(f'Column names are: {dataset_cot.column_names}')
+
+['system_prompt', 'question', 'response', 'id']
 
 
 def create_prompt(rec):
-    start = "Read the Instruction below and provide an answer."
-    question = f"### INSTRUCTION:\n{rec['source']}\n\n"
-    response = f"### RESPONSE:\n{rec['rationale']}\n"
-    answer = f"Therefore the answer is {rec['target']}\n\n"
+    start = f"### SYSTEM PROMPT:\n{rec['system_prompt']}\n\n"
+    question = f"### INSTRUCTION:\n{rec['question']}\n\n"
+    response = f"### RESPONSE:\n{rec['response']}\n"
     end = "### End"
 
     parts = [part for part in [start, question, response, answer, end] if part]
