@@ -107,7 +107,7 @@ mx = get_max_length(model)
 dataset = dataset.map(lambda samples: tokenizer(samples['text']), batched=True)
 dataset = dataset.filter(lambda sample: len(sample["input_ids"]) < mx)
 
-random.randint(1, 99)
+seed = random.randint(1, 99)
 set_seed(seed)
 dataset = dataset.shuffle(seed=seed)
 
