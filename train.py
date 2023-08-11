@@ -81,7 +81,7 @@ def create_prompt(rec):
     return rec
 
 
-p = create_prompt(dataset_cot[30000])
+p = create_prompt(dataset_cot[5000])
 print(p)
 print(p["text"])
 dataset = dataset_cot.map(create_prompt)
