@@ -15,6 +15,9 @@ import os
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 from transformers.trainer_callback import TrainerCallback
 
+from datasets import load_dataset
+import random
+
 model_id = MODEL_ID
 
 device = f'cuda:{cuda.current_device()}' if cuda.is_available() else 'cpu'
@@ -40,8 +43,6 @@ model = transformers.AutoModelForCausalLM.from_pretrained(
 )
 model.eval()
 print(f"Model loaded on {device}")
-mem = model.get_memory_footprint()
-print("Memory footprint: {} ".format(mem))
 
 tokenizer = transformers.AutoTokenizer.from_pretrained(
     model_id,
@@ -49,13 +50,12 @@ tokenizer = transformers.AutoTokenizer.from_pretrained(
 )
 
 # Get Dataset
-from datasets import load_dataset
 
 dataset = load_dataset(DATASET_NAME, split="train")
 print(f'Number of records: {len(dataset)}')
 print(f'Column names are: {dataset.column_names}')
 
-dataset_cot = dataset
+tmp_dataset = dataset
 
 
 def create_prompt(rec):
@@ -74,21 +74,15 @@ def create_prompt(rec):
     return rec
 
 
-p = create_prompt(dataset_cot[99])
-print(p)
-print(p["text"])
-dataset = dataset_cot.map(create_prompt)
+p = create_prompt(tmp_dataset[99])
+dataset = tmp_dataset.map(create_prompt)
 dataset = dataset.map(
     batched=True,
     remove_columns=['system_prompt',
                     'question', 'response', 'id']
 
 )
-print(dataset[99]["text"])
 
-
-# Save dataset to the hub for future use
-# dataset.push_to_hub("Venkat-Ram-Rao/processed_cot_dataset", private=True)
 
 # max length of the model
 def get_max_length(model):
@@ -106,14 +100,14 @@ def get_max_length(model):
 
 
 mx = get_max_length(model)
-mx
-len(dataset)
+
+
+
 # tokenize dataset
 dataset = dataset.map(lambda samples: tokenizer(samples['text']), batched=True)
-len(dataset)
 dataset = dataset.filter(lambda sample: len(sample["input_ids"]) < mx)
-len(dataset)
-seed = 42
+
+random.randint(1, 99)
 set_seed(seed)
 dataset = dataset.shuffle(seed=seed)
 
@@ -163,7 +157,6 @@ config = LoraConfig(
     task_type="CAUSAL_LM"
 )
 
-## Get the PEFT Model using the downloaded model and the loRA config
 model = get_peft_model(model, config)
 
 
@@ -200,16 +193,6 @@ class SavePeftModelCallback(transformers.TrainerCallback):
 
 
 # Training
-# Print Trainable parameters
-trainable_params = 0
-all_param = 0
-for _, param in model.named_parameters():
-    all_param += param.numel()
-    if param.requires_grad:
-        trainable_params += param.numel()
-print(
-    f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param}"
-)
 
 tokenizer.pad_token = tokenizer.eos_token
 trainer = Trainer(
