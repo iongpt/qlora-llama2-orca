@@ -10,6 +10,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed, Trainer,
     DataCollatorForLanguageModeling
 from torch import cuda, bfloat16
 import transformers
+import os
 
 model_id = MODEL_ID
 
