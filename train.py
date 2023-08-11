@@ -58,7 +58,8 @@ dataset = load_dataset(DATASET_NAME, split="train")
 print(f'Number of records: {len(dataset)}')
 print(f'Column names are: {dataset.column_names}')
 
-dataset_cot = dataset.filter(lambda example: example['type'] == "CoT")
+# dataset_cot = dataset.filter(lambda example: example['type'] == "CoT")
+dataset_cot = dataset
 print(f'Number of records: {len(dataset_cot)}')
 print(f'Column names are: {dataset_cot.column_names}')
 
