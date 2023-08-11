@@ -19,6 +19,7 @@ from transformers.trainer_callback import TrainerCallback
 
 from datasets import load_dataset
 import random
+from peft import LoraConfig, get_peft_model
 
 model_id = MODEL_ID
 
@@ -76,7 +77,7 @@ def create_prompt(rec):
     return rec
 
 
-p = create_prompt(tmp_dataset[99])
+p = create_prompt(tmp_dataset[4999])
 dataset = tmp_dataset.map(create_prompt)
 dataset = dataset.map(
     batched=True,
@@ -102,8 +103,6 @@ def get_max_length(model):
 
 
 mx = get_max_length(model)
-
-
 
 # tokenize dataset
 dataset = dataset.map(lambda samples: tokenizer(samples['text']), batched=True)
@@ -147,8 +146,6 @@ def find_all_linear_names(model):
 modules = find_all_linear_names(model)
 print(modules)
 
-from peft import LoraConfig, get_peft_model
-
 config = LoraConfig(
     r=16,
     lora_alpha=64,
@@ -174,8 +171,11 @@ def save_model(args, state, kwargs):
     kwargs["model"].save_pretrained(peft_model_path)
 
     pytorch_model_path = os.path.join(checkpoint_folder, "pytorch_model.bin")
+
     if os.path.exists(pytorch_model_path):
         os.remove(pytorch_model_path)
+
+    return peft_model_path
 
 
 class SavePeftModelCallback(transformers.TrainerCallback):
@@ -219,25 +219,19 @@ model.config.use_cache = False
 
 # trainer.train()
 
-model.save_pretrained(output_dir)
+peft_model_path = model.save_pretrained(output_dir)
 
 device = "auto"  # or any specific device name
 push_to_hub = True  # or False
 
-device_arg = { 'device_map': 'auto' }
-
+device_arg = {'device_map': 'auto'}
 
 print(f"Loading PEFT: {output_dir}")
 model = PeftModel.from_pretrained(model, peft_model_path, **device_arg)
 print(f"Running merge_and_unload")
 model = model.merge_and_unload()
 
-tokenizer = AutoTokenizer.from_pretrained(base_model_name_or_path)
-
 
 model.save_pretrained(f"{output_dir}")
 tokenizer.save_pretrained(f"{output_dir}")
 print(f"Model saved to {output_dir}")
-
-
-
