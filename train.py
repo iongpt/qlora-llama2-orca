@@ -148,7 +148,7 @@ print(modules)
 
 config = LoraConfig(
     r=16,
-    lora_alpha=64,
+    lora_alpha=128,
     target_modules=modules,  # should we  train all?
     lora_dropout=0.1,
     bias="none",
@@ -201,15 +201,15 @@ trainer = Trainer(
     train_dataset=dataset,
     args=TrainingArguments(
         per_device_train_batch_size=1,
-        gradient_accumulation_steps=4,
-        warmup_steps=10,
-        max_steps=10,
+        gradient_accumulation_steps=16,
+        warmup_steps=100,
+        max_steps=10000,
         fp16=True,
         logging_steps=1,
         output_dir="outputs",
         optim="paged_adamw_8bit",
-        num_train_epochs=1,
-        learning_rate=1e-4,
+        num_train_epochs=3,
+        learning_rate=4e-4,
     ),
     data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     callbacks=[SavePeftModelCallback]
@@ -217,21 +217,6 @@ trainer = Trainer(
 
 model.config.use_cache = False
 
-# trainer.train()
+trainer.train()
 
-peft_model_path = model.save_pretrained(output_dir)
-
-device = "auto"  # or any specific device name
-push_to_hub = True  # or False
-
-device_arg = {'device_map': 'auto'}
-
-print(f"Loading PEFT: {output_dir}")
-model = PeftModel.from_pretrained(model, peft_model_path, **device_arg)
-print(f"Running merge_and_unload")
-model = model.merge_and_unload()
-
-
-model.save_pretrained(f"{output_dir}")
-tokenizer.save_pretrained(f"{output_dir}")
-print(f"Model saved to {output_dir}")
+model.save_pretrained(output_dir)
