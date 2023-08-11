@@ -1,23 +1,15 @@
 # Configurable Parameters
 MODEL_ID = "meta-llama/Llama-2-7b-hf"
 DATASET_NAME = "eemotgs/en_es_orca_tiny"
+output_dir = "outputs"
 
-import argparse
 import bitsandbytes as bnb
-from datasets import load_dataset
-from functools import partial
-import os
-# from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, AutoPeftModelForCausalLM
 import torch
 import torch.nn as nn
-
 from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed, Trainer, TrainingArguments, BitsAndBytesConfig, \
     DataCollatorForLanguageModeling
 from torch import cuda, bfloat16
 import transformers
-
-# Get Model
-from huggingface_hub import notebook_login
 
 model_id = MODEL_ID
 
@@ -60,8 +52,6 @@ print(f'Number of records: {len(dataset)}')
 print(f'Column names are: {dataset.column_names}')
 
 dataset_cot = dataset
-
-['system_prompt', 'question', 'response', 'id']
 
 
 def create_prompt(rec):
@@ -172,6 +162,39 @@ config = LoraConfig(
 ## Get the PEFT Model using the downloaded model and the loRA config
 model = get_peft_model(model, config)
 
+
+## Saving after training
+
+def save_model(args, state, kwargs):
+    print('Saving PEFT checkpoint...')
+    if state.best_model_checkpoint is not None:
+        checkpoint_folder = os.path.join(state.best_model_checkpoint, "adapter_model")
+    else:
+        checkpoint_folder = os.path.join(args.output_dir, f"{PREFIX_CHECKPOINT_DIR}-{state.global_step}")
+
+    peft_model_path = os.path.join(checkpoint_folder, "adapter_model")
+    kwargs["model"].save_pretrained(peft_model_path)
+
+    pytorch_model_path = os.path.join(checkpoint_folder, "pytorch_model.bin")
+    if os.path.exists(pytorch_model_path):
+        os.remove(pytorch_model_path)
+
+
+class SavePeftModelCallback(transformers.TrainerCallback):
+
+    def on_save(self, args, state, control, **kwargs):
+        save_model(args, state, kwargs)
+        return control
+
+    def on_train_end(self, args, state, control, **kwargs):
+        def touch(fname, times=None):
+            with open(fname, 'a'):
+                os.utime(fname, times)
+
+        touch(os.path.join(args.output_dir, 'completed'))
+        save_model(args, state, kwargs)
+
+
 # Training
 # Print Trainable parameters
 trainable_params = 0
@@ -199,9 +222,12 @@ trainer = Trainer(
         output_dir="outputs",
         optim="paged_adamw_8bit",
     ),
-    data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False)
+    data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
+    callbacks=[SavePeftModelCallback]
 )
 
-model.config.use_cache = False  # re-enable for inference to speed up predictions for similar inputs
+model.config.use_cache = False
 
 trainer.train()
+
+model.save_pretrained(output_dir)
