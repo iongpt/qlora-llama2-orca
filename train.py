@@ -226,10 +226,6 @@ trainer = Trainer(
         optim="paged_adamw_8bit",
         num_train_epochs=1,
         learning_rate=1e-4,
-        lora_r=8,
-        lora_alpha=16,
-        lora_dropout=0.05
-
     ),
     data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     callbacks=[SavePeftModelCallback]
