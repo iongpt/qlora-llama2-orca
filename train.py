@@ -161,7 +161,6 @@ config = LoraConfig(
     lora_dropout=0.1,  # dropout probability for layers
     bias="none",
     task_type="CAUSAL_LM",
-    batch_size=128,
     micro_batch_size=4
 )
 
