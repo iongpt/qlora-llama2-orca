@@ -160,7 +160,9 @@ config = LoraConfig(
     target_modules=modules,  # gonna train all
     lora_dropout=0.1,  # dropout probability for layers
     bias="none",
-    task_type="CAUSAL_LM",  # for Decoder models like GPT Seq2Seq for Encoder-Decoder models like T5
+    task_type="CAUSAL_LM",
+    batch_size=128,
+    micro_batch_size=4
 )
 
 ## Get the PEFT Model using the downloaded model and the loRA config
@@ -224,8 +226,8 @@ trainer = Trainer(
         logging_steps=1,
         output_dir="outputs",
         optim="paged_adamw_8bit",
-        batch_size=128,
-        micro_batch_size=4,
+
+
         num_epochs=1,
         learning_rate=1e-4,
         cutoff_len=256,
