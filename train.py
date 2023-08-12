@@ -1,7 +1,8 @@
 # Configurable Parameters
-# MODEL_ID = "meta-llama/Llama-2-7b-hf"
-MODEL_ID = "projecte-aina/aguila-7b"
-DATASET_NAME = "eemotgs/en_es_orca_tiny"
+MODEL_ID = "meta-llama/Llama-2-7b-hf"
+# MODEL_ID = "projecte-aina/aguila-7b"
+# DATASET_NAME = "eemotgs/en_es_orca_tiny"
+DATASET_NAME = "iongpt/en_es_orca_1024_large"
 output_dir = "outputs"
 
 import bitsandbytes as bnb
@@ -31,7 +32,7 @@ bnb_config = transformers.BitsAndBytesConfig(
     bnb_4bit_compute_dtype=bfloat16
 )
 
-# begin initializing HF items, need auth token for these
+# some models requires authentication on HF. This is the case for Llama-2-7b
 model_config = transformers.AutoConfig.from_pretrained(
     model_id,
     use_auth_token=True
@@ -65,9 +66,8 @@ def create_prompt(rec):
     start = f"### SYSTEM PROMPT:\n{rec['system_prompt']}\n\n"
     question = f"### INSTRUCTION:\n{rec['question']}\n\n"
     response = f"### RESPONSE:\n{rec['response']}\n"
-    end = "### End"
 
-    parts = [part for part in [start, question, response, end] if part]
+    parts = [part for part in [start, question, response] if part]
 
     formatted_prompt = "\n\n".join(parts)
     formatted_prompt = formatted_prompt.replace('\\n', '\n')
@@ -114,7 +114,7 @@ dataset = dataset.shuffle(seed=seed)
 
 # Freeze Original Weights
 for param in model.parameters():
-    param.requires_grad = False  # freeze the model - train adapters later
+    param.requires_grad = False
     if param.ndim == 1:
         param.data = param.data.to(torch.float32)
 
@@ -147,10 +147,10 @@ modules = find_all_linear_names(model)
 print(modules)
 
 config = LoraConfig(
-    r=16,
+    r=64,
     lora_alpha=128,
-    target_modules=modules,  # should we  train all?
-    lora_dropout=0.1,
+    target_modules=modules,  # all linear layers
+    lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM"
 )
@@ -194,22 +194,21 @@ class SavePeftModelCallback(transformers.TrainerCallback):
 
 
 # Training
-
 tokenizer.pad_token = tokenizer.eos_token
 trainer = Trainer(
     model=model,
     train_dataset=dataset,
     args=TrainingArguments(
-        per_device_train_batch_size=1,
+        per_device_train_batch_size=8,
         gradient_accumulation_steps=16,
         warmup_steps=100,
-        max_steps=10000,
+        max_steps=1000,
         fp16=True,
         logging_steps=1,
         output_dir="outputs",
         optim="paged_adamw_8bit",
         num_train_epochs=3,
-        learning_rate=4e-4,
+        learning_rate=3e-4,
     ),
     data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     callbacks=[SavePeftModelCallback]
