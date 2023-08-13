@@ -1,5 +1,5 @@
 # Configurable Parameters
-MODEL_ID = "meta-llama/Llama-2-7b-hf"
+MODEL_ID = "meta-llama/Llama-2-13b-hf"
 # MODEL_ID = "projecte-aina/aguila-7b"
 # DATASET_NAME = "eemotgs/en_es_orca_tiny"
 DATASET_NAME = "iongpt/en_es_orca_1024_large"
@@ -77,7 +77,6 @@ def create_prompt(rec):
     return rec
 
 
-p = create_prompt(tmp_dataset[4999])
 dataset = tmp_dataset.map(create_prompt)
 dataset = dataset.map(
     batched=True,
@@ -89,8 +88,6 @@ dataset = dataset.map(
 
 # max length of the model
 def get_max_length(model):
-    conf = model.config
-    max_length = None
     for length_setting in ["n_positions", "max_position_embeddings", "seq_length"]:
         max_length = getattr(model.config, length_setting, None)
         if max_length:

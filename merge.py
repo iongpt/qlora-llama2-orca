@@ -1,3 +1,5 @@
+# This code was copied from here: https://gist.github.com/TheBloke/d31d289d3198c24e0ca68aaf37a19032
+# It was included here just for convenience in the process of fine tune, merge and quantize the model.
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 import torch
@@ -7,7 +9,7 @@ import os
 
 def main():
     # Hardcoded values
-    base_model_name_or_path = "projecte-aina/aguila-7b"
+    base_model_name_or_path = "meta-llama/Llama-2-13b-hf"
     peft_model_path = "outputs/"
     output_dir = "merged"
     device = "auto"
@@ -23,6 +25,7 @@ def main():
         base_model_name_or_path,
         return_dict=True,
         torch_dtype=torch.float16,
+        use_auth_token=True,
         **device_arg
     )
 
