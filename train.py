@@ -65,7 +65,7 @@ tmp_dataset = dataset
 def create_prompt(rec):
     start = f"### SYSTEM PROMPT:\n{rec['system_prompt']}\n\n"
     question = f"### INSTRUCTION:\n{rec['question']}\n\n"
-    response = f"### RESPONSE:\n{rec['response']}\n"
+    response = f"### RESPONSE:\n{rec['response']}</s>\n"
 
     parts = [part for part in [start, question, response] if part]
 
@@ -103,7 +103,8 @@ mx = get_max_length(model)
 
 # tokenize dataset
 dataset = dataset.map(lambda samples: tokenizer(samples['text']), batched=True)
-dataset = dataset.filter(lambda sample: len(sample["input_ids"]) < mx)
+# dataset = dataset.filter(lambda sample: len(sample["input_ids"]) < mx) # filter out samples that are too long.
+# Uncomment this line if you are unsure about the max length of the entries in the dataset
 
 seed = random.randint(1, 99)
 set_seed(seed)
