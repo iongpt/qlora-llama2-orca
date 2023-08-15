@@ -21,6 +21,8 @@ from transformers.trainer_callback import TrainerCallback
 from datasets import load_dataset
 import random
 from peft import LoraConfig, get_peft_model
+import wandb
+import random
 
 model_id = MODEL_ID
 
@@ -65,7 +67,7 @@ tmp_dataset = dataset
 def create_prompt(rec):
     start = f"### SYSTEM PROMPT:\n{rec['system_prompt']}\n\n"
     question = f"### INSTRUCTION:\n{rec['question']}\n\n"
-    response = f"### RESPONSE:\n<s>{rec['response']}</s>\n"
+    response = f"### RESPONSE:\n{rec['response']}\n"
 
     parts = [part for part in [start, question, response] if part]
 
@@ -191,6 +193,17 @@ class SavePeftModelCallback(transformers.TrainerCallback):
         save_model(args, state, kwargs)
 
 
+wandb.init(
+    # set the wandb project where this run will be logged
+    project="EE_Ion_en_es",
+
+    # track hyperparameters and run metadata
+    config={
+        "learning_rate": 0.0001,
+        "dataset": DATASET_NAME,
+        "epochs": 3,
+    }
+)
 # Training
 tokenizer.pad_token = tokenizer.eos_token
 trainer = Trainer(
@@ -206,7 +219,7 @@ trainer = Trainer(
         output_dir="outputs",
         optim="paged_adamw_8bit",
         num_train_epochs=3,
-        learning_rate=3e-4,
+        learning_rate=1e-4,
     ),
     data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     callbacks=[SavePeftModelCallback]

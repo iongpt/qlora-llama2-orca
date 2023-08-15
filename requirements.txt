@@ -6,3 +6,4 @@ peft
 scipy
 auto_gptq
 SentencePiece
+wandb
