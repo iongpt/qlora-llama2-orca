@@ -2,7 +2,8 @@
 MODEL_ID = "meta-llama/Llama-2-13b-hf"
 # MODEL_ID = "projecte-aina/aguila-7b"
 # DATASET_NAME = "eemotgs/en_es_orca_tiny"
-DATASET_NAME = "iongpt/en_es_orca_1024_large"
+# DATASET_NAME = "iongpt/en_es_orca_1024_large"
+DATASET_NAME = "/workspace/ion"
 output_dir = "outputs"
 
 import bitsandbytes as bnb
@@ -68,7 +69,7 @@ def create_prompt(rec):
     start = f"### SYSTEM PROMPT:\n{rec['system_prompt']}\n\n"
     question = f"### INSTRUCTION:\n{rec['question']}\n\n"
     response = f"### RESPONSE:\n{rec['response']}\n\n"
-    end = "### End"
+    end = "### END"
 
     parts = [part for part in [start, question, response, end] if part]
 
@@ -200,9 +201,21 @@ wandb.init(
 
     # track hyperparameters and run metadata
     config={
-        "learning_rate": 0.0001,
-        "dataset": DATASET_NAME,
+        "learning_rate": 0.0004,
         "epochs": 3,
+        "batch_size": 16,
+        "gradient_accumulation": 16,
+        "warmup_steps": 100,
+        "max_steps": 1000,
+        "fp16": "True",
+        "logging_steps": 1,
+        "optim": "paged_adamw_8bit",
+        "lora_rank": 64,
+        "lora_alpha": 128,
+        "target_modules": "All linear layers",
+        "lora_dropout": 0.05,
+        "bias": "none",
+        "task_type": "CAUSAL_LM"
     }
 )
 # Training
@@ -220,7 +233,7 @@ trainer = Trainer(
         output_dir="outputs",
         optim="paged_adamw_8bit",
         num_train_epochs=3,
-        learning_rate=1e-4,
+        learning_rate=4e-4,
     ),
     data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     callbacks=[SavePeftModelCallback]
