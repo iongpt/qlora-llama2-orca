@@ -45,7 +45,7 @@ def use_pipeline_for_translation(model, tokenizer, prompt_template):
 
 
 def main():
-    model_name_or_path = "EE_Ion_en_es-v1_0_alpha-fp16"
+    model_name_or_path = "iongpt_EE_Ion_en_es-v1_0_alpha-fp16"
     device = "auto"
     model, tokenizer = load_model_and_tokenizer(model_name_or_path, device)
 

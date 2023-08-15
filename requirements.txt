@@ -1,0 +1,8 @@
+torch
+transformers
+datasets
+bitsandbytes
+peft
+scipy
+auto_gptq
+SentencePiece

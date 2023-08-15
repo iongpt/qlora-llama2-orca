@@ -13,7 +13,7 @@ class QuantAutoGPTQ:
     def __init__(self, model_name_or_path, output_dir, dataset,
                  num_samples=128, trust_remote_code=False, cache_examples=True,
                  use_fast=True, use_triton=False, bits=[4], group_size=[128], damp=[0.01],
-                 desc_act=[False], dtype='float16', seqlen=2048, batch_size=1, stop_file=None,
+                 desc_act=[False], dtype='float16', seqlen=4096, batch_size=1, stop_file=None,
                  make_folder=False, GPU=0, cuda_alloc_conf=None):
 
         self.pretrained_model_dir = model_name_or_path
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     # Hardcoded values
     pretrained_model_dir = "merged/"  # <-- Replace with your value
     output_dir_base = "quant/"  # <-- Replace with your value
-    dataset = "iongpt/en_es_orca_1024_large"  # <-- Replace with your value
+    dataset = "wikitext"  # <-- Replace with your value
     num_samples = 128
     trust_remote_code = False
     cache_examples = True
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     damp = [0.01]
     desc_act = [0]
     dtype = 'float16'
-    seqlen = 2048
+    seqlen = 4096
     batch_size = 1
     stop_file = None
     make_folder = False

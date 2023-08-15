@@ -65,7 +65,7 @@ tmp_dataset = dataset
 def create_prompt(rec):
     start = f"### SYSTEM PROMPT:\n{rec['system_prompt']}\n\n"
     question = f"### INSTRUCTION:\n{rec['question']}\n\n"
-    response = f"### RESPONSE:\n{rec['response']}</s>\n"
+    response = f"### RESPONSE:\n<s>{rec['response']}</s>\n"
 
     parts = [part for part in [start, question, response] if part]
 
@@ -197,7 +197,7 @@ trainer = Trainer(
     model=model,
     train_dataset=dataset,
     args=TrainingArguments(
-        per_device_train_batch_size=8,
+        per_device_train_batch_size=16,
         gradient_accumulation_steps=16,
         warmup_steps=100,
         max_steps=1000,
