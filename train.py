@@ -67,9 +67,10 @@ tmp_dataset = dataset
 def create_prompt(rec):
     start = f"### SYSTEM PROMPT:\n{rec['system_prompt']}\n\n"
     question = f"### INSTRUCTION:\n{rec['question']}\n\n"
-    response = f"### RESPONSE:\n{rec['response']}\n"
+    response = f"### RESPONSE:\n{rec['response']}\n\n"
+    end = "### End"
 
-    parts = [part for part in [start, question, response] if part]
+    parts = [part for part in [start, question, response, end] if part]
 
     formatted_prompt = "\n\n".join(parts)
     formatted_prompt = formatted_prompt.replace('\\n', '\n')
